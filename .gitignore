@@ -39,3 +39,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# ...but the template with no secrets in it should be committed
+!.env.example
+
+/.claude-flow/

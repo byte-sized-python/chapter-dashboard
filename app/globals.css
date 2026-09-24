@@ -1,26 +1,593 @@
 @import "tailwindcss";
 
+/* ============================================================
+   Byte-Sized Python design system
+   Tokens and component classes lifted verbatim from the BSP
+   design system (tokens/*.css + components/core.css) that the
+   Chapter Hub prototype links. Don't invent new hexes.
+   ============================================================ */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* ---- Brand core ---------------------------------------- */
+  --bsp-blue: #3776ab;
+  --bsp-blue-deep: #2563eb;
+  --bsp-yellow: #fed33b;
+  --bsp-yellow-2: #ffd43b;
+  --bsp-coral: #f75d5d;
+  --bsp-ink: #1e293b;
+  --bsp-white: #ffffff;
+
+  /* ---- Neutral slate ramp -------------------------------- */
+  --slate-50: #f8fafc;
+  --slate-100: #f1f5f9;
+  --slate-200: #e2e8f0;
+  --slate-300: #cbd5e1;
+  --slate-400: #94a3b8;
+  --slate-500: #64748b;
+  --slate-600: #475569;
+  --slate-700: #334155;
+  --slate-800: #1e293b;
+  --slate-900: #0f172a;
+
+  /* ---- Tints --------------------------------------------- */
+  --bsp-blue-50: rgba(55, 118, 171, 0.06);
+  --bsp-blue-100: rgba(55, 118, 171, 0.1);
+  --bsp-blue-200: rgba(55, 118, 171, 0.2);
+  --bsp-yellow-20: rgba(254, 211, 59, 0.2);
+  --bsp-yellow-30: rgba(254, 211, 59, 0.3);
+
+  /* ---- Semantic ------------------------------------------ */
+  --success: #16a34a;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+
+  --background: var(--bsp-white);
+  --foreground: var(--bsp-ink);
+  --primary: var(--bsp-blue);
+  --primary-foreground: var(--bsp-white);
+  --secondary: var(--bsp-yellow);
+  --secondary-foreground: var(--bsp-ink);
+  --card: var(--slate-50);
+  --muted: var(--slate-200);
+  --muted-foreground: #64748b;
+  --border: var(--slate-200);
+  --input: var(--slate-200);
+  --ring: var(--bsp-blue);
+  --destructive: var(--danger);
+  --destructive-foreground: var(--bsp-white);
+
+  /* ---- Typography ---------------------------------------- */
+  --font-heading: var(--font-dm-sans), -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, sans-serif;
+  --font-body: var(--font-dm-sans), -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, sans-serif;
+  --font-mono: var(--font-fira-code), ui-monospace, SFMono-Regular, Menlo,
+    monospace;
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+
+  --leading-relaxed: 1.65;
+  --tracking-wide: 0.05em;
+
+  /* ---- Spacing (8px rhythm) ------------------------------ */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+
+  /* ---- Radii --------------------------------------------- */
+  --radius: 0.75rem;
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+  --radius-full: 9999px;
+
+  /* ---- Shadows ------------------------------------------- */
+  --shadow-sm: 0 1px 2px rgba(30, 41, 59, 0.06);
+  --shadow-card: 0 10px 30px -10px rgba(30, 41, 59, 0.1);
+  --shadow-hero: 0 30px 60px -20px rgba(55, 118, 171, 0.25);
+  --shadow-float: 0 18px 40px -12px rgba(254, 211, 59, 0.25);
+  --shadow-glow: 0 0 50px rgba(55, 118, 171, 0.35);
+
+  /* ---- Gradients ----------------------------------------- */
+  --gradient-hero: linear-gradient(135deg, #3776ab 0%, #2563eb 100%);
+  --gradient-accent: linear-gradient(135deg, #fed33b 0%, #f97316 100%);
+  --gradient-koda: linear-gradient(135deg, hsl(207 51% 44%), hsl(221 83% 53%));
+  --gradient-site: linear-gradient(
+    180deg,
+    #ffffff 0%,
+    rgba(55, 118, 171, 0.06) 25%,
+    rgba(254, 211, 59, 0.08) 50%,
+    rgba(55, 118, 171, 0.06) 75%,
+    #ffffff 100%
+  );
+
+  /* ---- Motion -------------------------------------------- */
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-fast: all 0.2s var(--ease-smooth);
+  --transition-smooth: all 0.3s var(--ease-smooth);
+  --duration-slow: 500ms;
+
+  --focus-ring: 0 0 0 2px var(--background), 0 0 0 4px var(--bsp-blue);
 }
 
+/* Expose the brand scale to Tailwind utilities. */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-brand: var(--bsp-blue);
+  --color-brand-yellow: var(--bsp-yellow);
+  --color-brand-coral: var(--bsp-coral);
+  --color-ink: var(--bsp-ink);
+  --color-slate-50: var(--slate-50);
+  --color-slate-100: var(--slate-100);
+  --color-slate-200: var(--slate-200);
+  --color-slate-300: var(--slate-300);
+  --color-slate-400: var(--slate-400);
+  --color-slate-500: var(--slate-500);
+  --color-slate-600: var(--slate-600);
+  --color-slate-700: var(--slate-700);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-success: var(--success);
+  --color-danger: var(--danger);
+  --font-sans: var(--font-body);
+  --font-mono: var(--font-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
 }
 
 body {
+  margin: 0;
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--primary);
+}
+a:hover {
+  color: #2f679a;
+}
+
+/* Tiny uppercase eyebrow label above a page title. */
+.eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--primary);
+}
+
+/* ============================================================
+   Button
+   ============================================================ */
+.bsp-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  white-space: nowrap;
+  font-family: var(--font-heading);
+  font-weight: var(--weight-bold);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  text-decoration: none;
+  line-height: 1;
+  user-select: none;
+}
+.bsp-btn:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+.bsp-btn:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+.bsp-btn svg {
+  width: 1em;
+  height: 1em;
+  flex-shrink: 0;
+}
+
+.bsp-btn--sm {
+  height: 2.25rem;
+  padding: 0 0.75rem;
+  font-size: var(--text-sm);
+}
+.bsp-btn--md {
+  height: 2.5rem;
+  padding: 0 1rem;
+  font-size: var(--text-sm);
+}
+.bsp-btn--lg {
+  height: 2.75rem;
+  padding: 0 2rem;
+  font-size: var(--text-base);
+}
+
+.bsp-btn--primary {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  box-shadow: var(--shadow-card);
+}
+.bsp-btn--primary:hover {
+  background: #2f679a;
+  box-shadow: var(--shadow-hero);
+}
+.bsp-btn--secondary {
+  background: var(--secondary);
+  color: var(--secondary-foreground);
+  box-shadow: var(--shadow-card);
+}
+.bsp-btn--secondary:hover {
+  background: #f5c521;
+  box-shadow: var(--shadow-float);
+}
+.bsp-btn--outline {
+  background: var(--background);
+  color: var(--foreground);
+  border-color: var(--border);
+}
+.bsp-btn--outline:hover {
+  background: var(--muted);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+.bsp-btn--ghost {
+  background: transparent;
+  color: var(--foreground);
+}
+.bsp-btn--ghost:hover {
+  background: rgba(30, 41, 59, 0.05);
+}
+.bsp-btn--destructive {
+  background: var(--destructive);
+  color: var(--destructive-foreground);
+}
+.bsp-btn--destructive:hover {
+  background: #dc2626;
+}
+
+/* ============================================================
+   IconButton
+   ============================================================ */
+.bsp-iconbtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+.bsp-iconbtn:hover {
+  color: var(--foreground);
+  background: rgba(30, 41, 59, 0.05);
+}
+.bsp-iconbtn:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+.bsp-iconbtn:disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+.bsp-iconbtn--sm {
+  width: 1.75rem;
+  height: 1.75rem;
+}
+.bsp-iconbtn--md {
+  width: 2.25rem;
+  height: 2.25rem;
+}
+.bsp-iconbtn--lg {
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+/* ============================================================
+   Badge
+   ============================================================ */
+.bsp-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0.2rem 0.625rem;
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  border-radius: var(--radius-full);
+  border: 1px solid transparent;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+.bsp-badge--primary {
+  background: var(--bsp-blue-100);
+  color: var(--primary);
+  border-color: var(--bsp-blue-200);
+}
+.bsp-badge--secondary {
+  background: var(--bsp-yellow-30);
+  color: var(--bsp-ink);
+  border-color: rgba(254, 211, 59, 0.6);
+}
+.bsp-badge--neutral {
+  background: var(--muted);
+  color: var(--muted-foreground);
+}
+.bsp-badge--success {
+  background: rgba(22, 163, 74, 0.12);
+  color: var(--success);
+  border-color: rgba(22, 163, 74, 0.3);
+}
+.bsp-badge--danger {
+  background: rgba(239, 68, 68, 0.12);
+  color: var(--danger);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+.bsp-badge--outline {
+  background: transparent;
+  color: var(--foreground);
+  border-color: var(--border);
+}
+
+/* ============================================================
+   Chip
+   ============================================================ */
+.bsp-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0.5rem 1rem;
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--foreground);
+  cursor: default;
+  transition: var(--transition-fast);
+}
+.bsp-chip--interactive {
+  cursor: pointer;
+}
+.bsp-chip--interactive:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+.bsp-chip--yellow {
+  background: var(--secondary);
+  color: var(--secondary-foreground);
+  border-color: rgba(254, 211, 59, 0.5);
+}
+.bsp-chip--yellow.bsp-chip--interactive:hover {
+  background: #f5c521;
+  box-shadow: var(--shadow-float);
+  color: var(--secondary-foreground);
+}
+.bsp-chip:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+/* ============================================================
+   Card
+   ============================================================ */
+.bsp-card {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  transition: var(--transition-smooth);
+}
+.bsp-card--hover:hover {
+  box-shadow: var(--shadow-hero);
+  transform: translateY(-2px);
+}
+.bsp-card--flat {
+  box-shadow: none;
+}
+
+/* ============================================================
+   Input / Textarea
+   ============================================================ */
+.bsp-field-label {
+  display: block;
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--foreground);
+  margin-bottom: var(--space-2);
+}
+.bsp-input,
+.bsp-textarea,
+.bsp-select {
+  width: 100%;
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--foreground);
+  background: var(--background);
+  border: 1px solid var(--input);
+  border-radius: var(--radius-md);
+  padding: 0.55rem 0.75rem;
+  transition: var(--transition-fast);
+  outline: none;
+}
+.bsp-input::placeholder,
+.bsp-textarea::placeholder {
+  color: var(--muted-foreground);
+}
+.bsp-input:focus,
+.bsp-textarea:focus,
+.bsp-select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--bsp-blue-100);
+}
+.bsp-input:disabled,
+.bsp-textarea:disabled,
+.bsp-select:disabled {
+  opacity: 0.5;
+}
+.bsp-textarea {
+  resize: vertical;
+  min-height: 5rem;
+  line-height: var(--leading-relaxed);
+}
+.bsp-select {
+  height: 2.5rem;
+  padding-block: 0;
+}
+
+/* ============================================================
+   Avatar
+   ============================================================ */
+.bsp-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  flex-shrink: 0;
+  font-family: var(--font-heading);
+  font-weight: var(--weight-semibold);
+  user-select: none;
+  background: var(--bsp-blue-100);
+  color: var(--primary);
+}
+.bsp-avatar--sm {
+  width: 1.75rem;
+  height: 1.75rem;
+  font-size: 0.8rem;
+}
+.bsp-avatar--md {
+  width: 2.5rem;
+  height: 2.5rem;
+  font-size: 1rem;
+}
+
+/* ============================================================
+   SegmentedControl
+   ============================================================ */
+.bsp-segmented {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  background: var(--muted);
+  border-radius: var(--radius-full);
+}
+.bsp-segmented__item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0.375rem 0.875rem;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-full);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--muted-foreground);
+  cursor: pointer;
+  transition: var(--transition-fast);
+  white-space: nowrap;
+  text-decoration: none;
+}
+.bsp-segmented__item:hover {
+  color: var(--foreground);
+}
+.bsp-segmented__item--active {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  box-shadow: var(--shadow-sm);
+}
+.bsp-segmented__item--active:hover {
+  color: var(--primary-foreground);
+}
+
+/* ============================================================
+   Sidebar nav (Layout B)
+   ============================================================ */
+.bsp-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 12px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  text-decoration: none;
+  background: transparent;
+  color: var(--foreground);
+  transition: var(--transition-fast);
+}
+.bsp-nav-item:hover {
+  background: var(--bsp-blue-100);
+  color: var(--foreground);
+}
+.bsp-nav-item--active {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+.bsp-nav-item--active:hover {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+/* Row buttons in list/table views. */
+.bsp-row {
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  text-decoration: none;
+  transition: var(--transition-fast);
+}
+.bsp-row:hover {
+  background: var(--bsp-blue-50);
+}
+.bsp-row--active,
+.bsp-row--active:hover {
+  background: var(--bsp-blue-100);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
