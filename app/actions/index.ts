@@ -1,14 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
 import { getAccess, isHqAdminEmail, requireHqAdmin } from "@/lib/access";
+import type { ActionState } from "@/lib/action-state";
 import * as data from "@/lib/data";
 import { isPostCategory } from "@/lib/types";
-
-export type ActionState = { error: string | null; ok: boolean };
-
-export const IDLE: ActionState = { error: null, ok: false };
 
 function fail(error: string): ActionState {
   return { error, ok: false };
@@ -35,9 +33,37 @@ export async function createChapterAction(
   if (!location) return fail("Location is required.");
 
   await data.createChapter({ name, location });
-  revalidatePath("/hq/chapters");
-  revalidatePath("/hq");
+  // "/", "layout" revalidates the root layout (sidebar nav) plus every
+  // nested layout/page beneath it — /chapters, /chapters/[id], /people,
+  // /report all live under it. The old per-page paths here were literal
+  // "/hq/..." strings that don't match any real route in this app (routes
+  // are "/", "/chapters", "/people", "/report" — no "/hq" prefix), so they
+  // silently revalidated nothing and left stale data (e.g. a submitted
+  // report not reflected in the sidebar's missing-report count).
+  revalidatePath("/", "layout");
   return { error: null, ok: true };
+}
+
+export async function deleteChapterAction(
+  _prev: ActionState,
+  form: FormData,
+): Promise<ActionState> {
+  await requireHqAdmin();
+
+  const chapterId = text(form, "chapterId");
+  if (!chapterId) return fail("Missing chapter.");
+
+  const chapter = await data.getChapter(chapterId);
+  if (!chapter) return fail("That chapter no longer exists.");
+
+  await data.deleteChapter(chapterId);
+  revalidatePath("/", "layout");
+  // Thrown, not returned: the chapter's own detail page no longer exists,
+  // so the redirect has to happen authoritatively from here rather than as
+  // a client effect reacting to `ok: true` — that raced against Next's own
+  // revalidation of the current (now-404) route and lost, leaving the admin
+  // stranded on a 404 instead of back at the chapter list.
+  redirect("/chapters");
 }
 
 export async function updateChapterAction(
@@ -54,8 +80,7 @@ export async function updateChapterAction(
   if (!location) return fail("Location is required.");
 
   await data.updateChapter(chapterId, { name, location });
-  revalidatePath("/hq/chapters");
-  revalidatePath("/hq");
+  revalidatePath("/", "layout");
   return { error: null, ok: true };
 }
 
@@ -88,7 +113,7 @@ export async function assignMembershipAction(
   if (!chapter) return fail("That chapter no longer exists.");
 
   await data.assignMembership({ email, chapterId, name: name || null });
-  revalidatePath("/hq/people");
+  revalidatePath("/", "layout");
   return { error: null, ok: true };
 }
 
@@ -102,7 +127,7 @@ export async function removeMembershipAction(
   if (!email) return fail("Missing email.");
 
   await data.removeMembership(email);
-  revalidatePath("/hq/people");
+  revalidatePath("/", "layout");
   return { error: null, ok: true };
 }
 
@@ -133,8 +158,8 @@ export async function createPostAction(
     link: link || null,
     createdBy: access.email,
   });
+  // "/hq/feed" never matched a real route; the feed lives at "/".
   revalidatePath("/");
-  revalidatePath("/hq/feed");
   return { error: null, ok: true };
 }
 
@@ -149,7 +174,6 @@ export async function deletePostAction(
 
   await data.deletePost(postId);
   revalidatePath("/");
-  revalidatePath("/hq/feed");
   return { error: null, ok: true };
 }
 
@@ -196,7 +220,8 @@ export async function submitReportAction(
     curriculumProgress,
     blockersNotes,
   });
-  revalidatePath("/report");
-  revalidatePath("/hq");
+  // Broad invalidation: this affects the sidebar's due/missing indicators,
+  // the /chapters rollup and that chapter's detail page, not just /report.
+  revalidatePath("/", "layout");
   return { error: null, ok: true };
 }

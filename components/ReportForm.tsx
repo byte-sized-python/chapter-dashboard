@@ -2,7 +2,8 @@
 
 import { useActionState, useState } from "react";
 
-import { IDLE, submitReportAction } from "@/app/actions";
+import { submitReportAction } from "@/app/actions";
+import { IDLE } from "@/lib/action-state";
 import { monthLabel } from "@/lib/dates";
 import { Button, Card, ErrorNote, Field, Input, Textarea } from "./ui";
 

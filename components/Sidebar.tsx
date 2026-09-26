@@ -5,12 +5,12 @@ import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
 import { Avatar, Badge } from "./ui";
-import { ClipboardIcon, FeedIcon, LogOutIcon, UsersIcon } from "./icons";
+import { BuildingIcon, ClipboardIcon, FeedIcon, LogOutIcon, UsersIcon } from "./icons";
 
 export type NavItem = {
   href: string;
   label: string;
-  icon: "feed" | "users" | "clipboard";
+  icon: "feed" | "users" | "building" | "clipboard";
   /** Red count badge, e.g. chapters missing this month's report. */
   badge?: number;
   /** Small coral dot, e.g. this chapter's report is still due. */
@@ -20,6 +20,7 @@ export type NavItem = {
 const ICONS: Record<NavItem["icon"], ReactNode> = {
   feed: <FeedIcon />,
   users: <UsersIcon />,
+  building: <BuildingIcon />,
   clipboard: <ClipboardIcon />,
 };
 

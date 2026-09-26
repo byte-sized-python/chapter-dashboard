@@ -31,6 +31,34 @@ export function UsersIcon({ size = 18 }: Props) {
   );
 }
 
+/** A chapter location/building — distinct from UsersIcon (People). */
+export function BuildingIcon({ size = 18 }: Props) {
+  return (
+    <svg {...base} width={size} height={size}>
+      <rect width="16" height="20" x="4" y="2" rx="2" ry="2" />
+      <path d="M9 22v-4h6v4" />
+      <path d="M8 6h.01" />
+      <path d="M16 6h.01" />
+      <path d="M12 6h.01" />
+      <path d="M12 10h.01" />
+      <path d="M12 14h.01" />
+      <path d="M16 10h.01" />
+      <path d="M16 14h.01" />
+      <path d="M8 10h.01" />
+      <path d="M8 14h.01" />
+    </svg>
+  );
+}
+
+export function SearchIcon({ size = 16 }: Props) {
+  return (
+    <svg {...base} width={size} height={size}>
+      <circle cx="11" cy="11" r="8" />
+      <path d="m21 21-4.3-4.3" />
+    </svg>
+  );
+}
+
 export function ClipboardIcon({ size = 18 }: Props) {
   return (
     <svg {...base} width={size} height={size}>

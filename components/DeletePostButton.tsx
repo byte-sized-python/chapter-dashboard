@@ -2,7 +2,8 @@
 
 import { useActionState } from "react";
 
-import { deletePostAction, IDLE } from "@/app/actions";
+import { deletePostAction } from "@/app/actions";
+import { IDLE } from "@/lib/action-state";
 import { IconButton } from "./ui";
 import { TrashIcon } from "./icons";
 

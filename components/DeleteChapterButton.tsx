@@ -1,38 +1,46 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useState } from "react";
 
-import { updateChapterAction } from "@/app/actions";
+import { deleteChapterAction } from "@/app/actions";
 import { IDLE } from "@/lib/action-state";
 import type { Chapter } from "@/lib/types";
-import { Button, ErrorNote, Field, IconButton, Input } from "./ui";
-import { CloseIcon, PencilIcon } from "./icons";
+import { Button, ErrorNote, IconButton } from "./ui";
+import { CloseIcon, TrashIcon } from "./icons";
 
-export function ChapterEditor({ chapter }: { chapter: Chapter }) {
+/**
+ * Deleting a chapter is destructive and hard to reverse: it also revokes
+ * every assigned instructor's access, since chapterMemberships/{email} is
+ * their only path in. This confirms explicitly and names who loses access
+ * before submitting, rather than a bare delete button.
+ */
+export function DeleteChapterButton({
+  chapter,
+  instructorEmails,
+}: {
+  chapter: Chapter;
+  instructorEmails: string[];
+}) {
   const [open, setOpen] = useState(false);
   const [state, formAction, pending] = useActionState(
-    updateChapterAction,
+    deleteChapterAction,
     IDLE,
   );
-
-  // Close once the update actually saved. See PostComposer for why this must
-  // be an effect rather than a render-phase state adjustment.
-  useEffect(() => {
-    if (state.ok) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setOpen(false);
-    }
-  }, [state]);
+  // No client-side redirect-on-success here: deleteChapterAction calls
+  // next/navigation's redirect("/chapters") itself once the delete
+  // succeeds, which Next treats as authoritative. Reacting to `state.ok`
+  // instead raced against Next's own revalidation of this (now-deleted)
+  // chapter's page and lost, leaving the admin stuck on a 404.
 
   return (
     <>
       <IconButton
         size="md"
-        aria-label={`Edit ${chapter.name}`}
-        title="Edit chapter"
+        aria-label={`Delete ${chapter.name}`}
+        title="Delete chapter"
         onClick={() => setOpen(true)}
       >
-        <PencilIcon />
+        <TrashIcon />
       </IconButton>
 
       {open ? (
@@ -54,7 +62,7 @@ export function ChapterEditor({ chapter }: { chapter: Chapter }) {
             onClick={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"
-            aria-label="Edit chapter"
+            aria-label={`Delete ${chapter.name}`}
             style={{
               width: "100%",
               maxWidth: 480,
@@ -86,7 +94,7 @@ export function ChapterEditor({ chapter }: { chapter: Chapter }) {
                     fontWeight: 700,
                   }}
                 >
-                  Edit chapter
+                  Delete {chapter.name}?
                 </h2>
                 <IconButton
                   type="button"
@@ -100,22 +108,37 @@ export function ChapterEditor({ chapter }: { chapter: Chapter }) {
 
               {state.error ? <ErrorNote>{state.error}</ErrorNote> : null}
 
-              <Field label="Chapter name" htmlFor="c-name">
-                <Input
-                  id="c-name"
-                  name="name"
-                  required
-                  defaultValue={chapter.name}
-                />
-              </Field>
-              <Field label="Location" htmlFor="c-location">
-                <Input
-                  id="c-location"
-                  name="location"
-                  required
-                  defaultValue={chapter.location}
-                />
-              </Field>
+              <div
+                style={{
+                  padding: "12px 16px",
+                  borderRadius: 12,
+                  background: "rgba(239,68,68,0.08)",
+                  border: "1px solid rgba(239,68,68,0.25)",
+                  fontSize: 14,
+                  lineHeight: 1.5,
+                  color: "#b91c1c",
+                }}
+              >
+                This permanently deletes {chapter.name} and can&apos;t be
+                undone.{" "}
+                {instructorEmails.length > 0 ? (
+                  <>
+                    It also revokes platform access for{" "}
+                    {instructorEmails.length === 1
+                      ? "the instructor below"
+                      : `all ${instructorEmails.length} instructors below`}{" "}
+                    — they won&apos;t be able to sign in until re-added to a
+                    different chapter:
+                    <ul style={{ margin: "8px 0 0", paddingLeft: 20 }}>
+                      {instructorEmails.map((email) => (
+                        <li key={email}>{email}</li>
+                      ))}
+                    </ul>
+                  </>
+                ) : (
+                  "No one is currently assigned to it."
+                )}
+              </div>
 
               <div
                 style={{
@@ -131,8 +154,8 @@ export function ChapterEditor({ chapter }: { chapter: Chapter }) {
                 >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={pending}>
-                  {pending ? "Saving…" : "Save"}
+                <Button type="submit" variant="destructive" disabled={pending}>
+                  {pending ? "Deleting…" : "Delete chapter"}
                 </Button>
               </div>
             </form>

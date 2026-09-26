@@ -1,13 +1,13 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useMemo, useState } from "react";
 
 import {
   assignMembershipAction,
   createChapterAction,
-  IDLE,
   removeMembershipAction,
 } from "@/app/actions";
+import { IDLE } from "@/lib/action-state";
 import type { Chapter, ChapterMembership } from "@/lib/types";
 import { formatDate } from "@/lib/dates";
 import {
@@ -19,7 +19,7 @@ import {
   Input,
   Select,
 } from "./ui";
-import { TrashIcon } from "./icons";
+import { SearchIcon, TrashIcon } from "./icons";
 
 function SectionTitle({ title, sub }: { title: string; sub: string }) {
   return (
@@ -193,7 +193,24 @@ export function MembershipTable({
   memberships: ChapterMembership[];
   chapters: Chapter[];
 }) {
-  const nameFor = new Map(chapters.map((c) => [c.id, c.name]));
+  const nameFor = useMemo(
+    () => new Map(chapters.map((c) => [c.id, c.name])),
+    [chapters],
+  );
+  const [query, setQuery] = useState("");
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return memberships;
+    return memberships.filter((m) => {
+      const chapterName = nameFor.get(m.chapterId) ?? "";
+      return (
+        m.email.toLowerCase().includes(q) ||
+        (m.name ?? "").toLowerCase().includes(q) ||
+        chapterName.toLowerCase().includes(q)
+      );
+    });
+  }, [memberships, nameFor, query]);
 
   return (
     <Card>
@@ -203,12 +220,41 @@ export function MembershipTable({
           memberships.length === 1 ? "person" : "people"
         } assigned to a chapter. HQ Admins are set by the HQ_ADMIN_EMAILS environment variable and don't appear here.`}
       />
+      {memberships.length > 0 ? (
+        <div style={{ padding: "16px 16px 0" }}>
+          <div style={{ position: "relative" }}>
+            <span
+              style={{
+                position: "absolute",
+                left: 12,
+                top: "50%",
+                transform: "translateY(-50%)",
+                color: "var(--muted-foreground)",
+                display: "flex",
+                pointerEvents: "none",
+              }}
+            >
+              <SearchIcon />
+            </span>
+            <Input
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search by name, email or chapter…"
+              aria-label="Search people"
+              style={{ paddingLeft: 36 }}
+            />
+          </div>
+        </div>
+      ) : null}
       <div style={{ padding: "16px 16px 20px" }}>
         {memberships.length === 0 ? (
           <EmptyState>Nobody has been added to a chapter yet.</EmptyState>
+        ) : filtered.length === 0 ? (
+          <EmptyState>No one matches &ldquo;{query}&rdquo;.</EmptyState>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            {memberships.map((m) => (
+            {filtered.map((m) => (
               <div
                 key={m.id}
                 style={{

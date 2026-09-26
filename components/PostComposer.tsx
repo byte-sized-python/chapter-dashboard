@@ -2,7 +2,8 @@
 
 import { useActionState, useEffect, useState } from "react";
 
-import { createPostAction, IDLE } from "@/app/actions";
+import { createPostAction } from "@/app/actions";
+import { IDLE } from "@/lib/action-state";
 import { POST_CATEGORIES, POST_CATEGORY_LABELS } from "@/lib/types";
 import { Button, Field, IconButton, Input, Textarea, ErrorNote } from "./ui";
 import { CloseIcon, PlusIcon } from "./icons";
@@ -12,17 +13,17 @@ export function PostComposer() {
   const [category, setCategory] = useState<string>("announcement");
   const [state, formAction, pending] = useActionState(createPostAction, IDLE);
 
-  // Close once the post actually saved. useActionState hands back a fresh
-  // state object per submission, so comparing identity tells us a new result
-  // landed. Adjusting during render avoids an effect's cascading re-render.
-  const [seen, setSeen] = useState(state);
-  if (seen !== state) {
-    setSeen(state);
+  // Close once the post actually saved. This has to be an effect, not a
+  // render-phase state adjustment: the latter fires while the Server Action's
+  // response is still being applied by the Router, and React throws "Cannot
+  // update a component (Router) while rendering a different component".
+  useEffect(() => {
     if (state.ok) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setOpen(false);
       setCategory("announcement");
     }
-  }
+  }, [state]);
 
   // Escape closes the dialog.
   useEffect(() => {

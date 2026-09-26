@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { redirect } from "next/navigation";
 
 import { auth0 } from "./auth0";
@@ -36,7 +37,7 @@ export function isHqAdminEmail(email: string): boolean {
  *
  * Returns null when there is no Auth0 session at all.
  */
-export async function getAccess(): Promise<Access | null> {
+export const getAccess = cache(async (): Promise<Access | null> => {
   const session = await auth0.getSession();
   const user = session?.user;
   if (!user?.email) return null;
@@ -68,7 +69,7 @@ export async function getAccess(): Promise<Access | null> {
   }
 
   return { role: "unassigned", email, name };
-}
+});
 
 /**
  * Require a signed-in user with some level of access. Redirects to Auth0 when

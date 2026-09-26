@@ -32,7 +32,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
       {
         href: "/chapters",
         label: "Chapters",
-        icon: "users",
+        icon: "building",
         badge: missing || undefined,
       },
       { href: "/people", label: "People", icon: "users" },

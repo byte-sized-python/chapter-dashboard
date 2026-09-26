@@ -1,12 +1,13 @@
 import { notFound } from "next/navigation";
 
 import { ChapterEditor } from "@/components/ChapterEditor";
+import { DeleteChapterButton } from "@/components/DeleteChapterButton";
 import { ReportHistory } from "@/components/ReportHistory";
 import { Badge, Card } from "@/components/ui";
 import { requireHqAdmin } from "@/lib/access";
 import {
   getChapter,
-  listMemberships,
+  listMembershipsForChapter,
   listReportsForChapter,
 } from "@/lib/data";
 import { currentMonth, monthLabel } from "@/lib/dates";
@@ -20,12 +21,10 @@ export default async function ChapterDetailPage({
   const chapter = await getChapter(chapterId);
   if (!chapter) notFound();
 
-  const [reports, memberships] = await Promise.all([
+  const [reports, instructors] = await Promise.all([
     listReportsForChapter(chapterId),
-    listMemberships(),
+    listMembershipsForChapter(chapterId),
   ]);
-
-  const instructors = memberships.filter((m) => m.chapterId === chapterId);
   const month = currentMonth();
   const reported = reports.some((r) => r.month === month);
 
@@ -74,6 +73,10 @@ export default async function ChapterDetailPage({
               : `${monthLabel(month)} missing`}
           </Badge>
           <ChapterEditor chapter={chapter} />
+          <DeleteChapterButton
+            chapter={chapter}
+            instructorEmails={instructors.map((m) => m.email)}
+          />
         </div>
       </div>
 
